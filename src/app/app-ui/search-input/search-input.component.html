@@ -1,0 +1,17 @@
+<div (click)="onContainerClick()">
+    <textarea type="text" #myTextAria
+              (mousedown)="onMouseDown($event)"
+              (keydown)="onKeyDown($event)"
+              (input)="onTextChanged($event)"
+              rows="3"
+              cols="40"
+    ></textarea>
+
+        <div *ngIf="showHints" class="auto-complete">
+            <mat-option *ngFor="let name of names$ | async" [value]="name" (click)="onNameClick(name)">
+                {{name}}
+            </mat-option>
+        </div>
+
+
+</div>

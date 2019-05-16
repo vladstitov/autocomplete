@@ -1,0 +1,20 @@
+{
+  "extends": "../tslint.json",
+  "rules": {
+    "only-arrow-functions": false,
+    "no-trailing-whitespace": false,
+    "curly": false,
+    "directive-selector": [
+      true,
+      "attribute",
+      "app",
+      "camelCase"
+    ],
+    "component-selector": [
+      true,
+      "element",
+      "app",
+      "kebab-case"
+    ]
+  }
+}
