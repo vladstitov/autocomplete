@@ -1,6 +1,6 @@
 import {Action} from '@ngrx/store';
 import {VOPerson} from '../models/people.models';
-import {VOInput} from '../models/autocomlete.models';
+import {VOInput, VOInputState} from '../models/autocomlete.models';
 
 export const TEXT_CHANGED = 'TEXT_CHANGED';
 export class TextChanged implements Action {
@@ -8,6 +8,11 @@ export class TextChanged implements Action {
   constructor(public payload: VOInput) {
   }
 }
+export const INPUT_TEXT_STATE_CHANGED = 'INPUT_TEXT_STATE_CHANGED';
+export class InputTextStateChanged implements Action{
+  readonly type = INPUT_TEXT_STATE_CHANGED;
+  constructor(public payload: VOInputState) {
+  }
+}
 
-
-export type Actions = TextChanged;
+export type Actions = TextChanged | InputTextStateChanged;

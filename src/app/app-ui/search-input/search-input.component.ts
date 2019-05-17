@@ -45,6 +45,7 @@ export class SearchInputComponent implements OnInit {
     this.textAria = (this.myTextArea as any).nativeElement;
     this.textArea$ = fromEvent(this.textAria, 'input').pipe(map(UtilsText.mapInput), tap(input => {
       this.textInputService.setTextInput(input);
+      this.store.dispatch(new TextChanged(input));
     }));
     this.textArea$.subscribe(noop);
 

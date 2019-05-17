@@ -8,7 +8,7 @@ export function autocompleteReducer(state: ApplicationState = INITIAL_APPLICATIO
   switch (action.type) {
     case TEXT_CHANGED :
       const newState: ApplicationState = Object.assign({}, state);
-      newState.uiState.textArea =  action.payload;
+      newState.storeData.textArea = action.payload;
       return  newState;
     default:
       return state;
