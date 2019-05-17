@@ -1,12 +1,14 @@
 import {Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {SearchNamesService} from '../../app-services/search-names.service';
 import {FormControl} from '@angular/forms';
-import {combineLatest, Observable, Subject} from 'rxjs';
+import {BehaviorSubject, combineLatest, fromEvent, noop, Observable, Subject} from 'rxjs';
 import {UtilsText} from '../../app-utils/utils-text';
-import {map, mergeMap, switchMap} from 'rxjs/operators';
+import {map, mergeMap, switchMap, tap} from 'rxjs/operators';
 import {Store} from '@ngrx/store';
 import {ApplicationState} from '../../app-core/store/application-state';
 import {TextChanged} from '../../app-core/store/actions';
+import {VOInput} from '../../app-core/models/autocomlete.models';
+import {TextInputService} from '../../app-services/text-input.service';
 
 @Component({
   selector: 'app-search-input',
@@ -15,9 +17,9 @@ import {TextChanged} from '../../app-core/store/actions';
 })
 export class SearchInputComponent implements OnInit {
 
-  @ViewChild('myTextAria') myTextAria: TemplateRef<HTMLTextAreaElement>;
+  @ViewChild('myTextAria') myTextArea: TemplateRef<HTMLTextAreaElement>;
   names$: Observable<string[]>;
-  searchPattern$: Subject<string> = new Subject();
+
   pattern: string;
   textAria: HTMLTextAreaElement;
   insertedNames: string[] = [];
@@ -25,69 +27,69 @@ export class SearchInputComponent implements OnInit {
   text = '';
   startPatternIndex = -1;
   showHints = false;
+  textArea$: Observable<VOInput>;
+  keyDown$: Observable<string>;
+
 
   constructor(
     private searchNames: SearchNamesService,
+    private textInputService: TextInputService,
     private store: Store<ApplicationState>
   ) {
+
   }
 
   ngOnInit() {
+    // this.store.subscribe(data => console.log(data));
 
-    this.store.subscribe(data => console.log(data));
-
-
-    this.textAria = (this.myTextAria as any).nativeElement;
-    this.names$ = this.searchPattern$.pipe(switchMap(pattern => {
-     return this.searchNames.names$.pipe(map(names => {
-       return UtilsText.filterNames(pattern, names);
-     }));
+    this.textAria = (this.myTextArea as any).nativeElement;
+    this.textArea$ = fromEvent(this.textAria, 'input').pipe(map(UtilsText.mapInput), tap(input => {
+      this.textInputService.setTextInput(input);
     }));
-  }
+    this.textArea$.subscribe(noop);
 
+    this.textInputService.textInput$.subscribe(input => {
+      if (input.input === '@') {
+        this.textInputService.setTextInputState({
+          startSignPosition: input.position - 1,
+          isHint: true,
+          pattern: ''
+        });
+      }
+    });
+
+    this.textInputService.textInputState$.subscribe(state =>  {
+      this.startPatternIndex = state.startSignPosition + 1;
+      this.showHints = state.isHint;
+    });
+
+    this.names$ = combineLatest(this.textInputService.pattren$, this.searchNames.names$)
+      .pipe(map(([pattern, names]) => {
+        return UtilsText.filterNames(pattern, names);
+      }));
+  }
 
   insertName(name) {
     let text = this.textAria.value;
     const end = this.textAria.selectionStart;
     const start = this.startPatternIndex;
-
     this.insertedNames.push(name);
     text = text.slice(0, start - 1) + name + text.slice(end);
     this.textAria.value = text;
-    this.store.dispatch(new TextChanged(text));
     this.textAria.focus();
   }
 
 
-
-  onKeyDown($event: KeyboardEvent) {
-
+ onKeyDown($event: KeyboardEvent) {
     this.lastKey = $event.code;
-    if ($event.key === '@') {
-      this.showHints = true;
-      this.startPatternIndex = this.textAria.selectionStart + 1;
-
-    }
-  }
-
-
-  onMouseDown($event: MouseEvent) {
-
   }
 
   onTextChanged($event: Event) {
     const text = this.textAria.value;
-    this.store.dispatch(new TextChanged(text));
-    if (this.showHints) {
-      const pattern = text.substring(this.startPatternIndex, this.textAria.selectionStart);
-      this.searchPattern$.next(pattern);
-      return;
-    }
 
     if (this.lastKey !== 'Backspace' && this.lastKey !== 'Delete') {
       return;
     }
-
 
     const pos = this.textAria.selectionStart;
 
@@ -107,7 +109,7 @@ export class SearchInputComponent implements OnInit {
         const positionAfter = UtilsText.getPositionWordAfter(pos, text);
         if (this.lastKey === 'Delete' && positionAfter !== -1) {
           const wordAfter = text.substring(pos, positionAfter);
-         //  console.log('after ' + wordAfter);
+          //  console.log('after ' + wordAfter);
           if (this.insertedNames.indexOf(wordAfter) !== -1) {
             this.textAria.selectionEnd = positionAfter;
           }
@@ -117,15 +119,18 @@ export class SearchInputComponent implements OnInit {
         this.insertedNames = UtilsText.removeNotUsed(this.insertedNames, text);
         break;
     }
-
-
   }
 
   onContainerClick() {
-    this.showHints = false;
-    this.searchPattern$.next('');  }
+   this.textInputService.setTextInputState({
+     startSignPosition: -1,
+     pattern: '',
+     isHint: false
+   });
+  }
 
   onNameClick(name: string) {
     this.insertName(name);
+    this.textInputService.setTextInputState({isHint: false, pattern: '', startSignPosition: -1});
   }
 }

@@ -1,4 +1,5 @@
+import {VOInput} from '../models/autocomlete.models';
+
 export interface UiState {
-  pattern: string;
-  cursorPosition: number;
+  textArea: VOInput
 }

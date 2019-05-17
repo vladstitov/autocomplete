@@ -1,3 +1,5 @@
+import {VOInput} from '../app-core/models/autocomlete.models';
+
 export class UtilsText {
   static getPositionWordBefore(pos: number, text: string) {
     if (pos === 0) {
@@ -48,8 +50,21 @@ export class UtilsText {
   }
 
   static filterNames(pattern: string, ar: string[]) {
+    if (!pattern) return ar;
+    pattern = pattern.toLocaleLowerCase();
     return ar.filter(function(item) {
-      return item.startsWith(pattern);
+      return item.toLocaleLowerCase().startsWith(pattern);
     });
+  }
+
+  static mapInput(evt): VOInput  {
+    const input  = evt.data;
+    const text: string = evt.target.value;
+    const position = evt.target.selectionStart;
+    return {
+      input,
+      text,
+      position
+    };
   }
 }

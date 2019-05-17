@@ -1,7 +1,7 @@
 import {VOPerson} from '../models/people.models';
+import {VOInput} from '../models/autocomlete.models';
 
 export interface StoreData {
-  textValue: string;
   namesInserted: string[];
   people: VOPerson[];
 }

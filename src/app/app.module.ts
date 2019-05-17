@@ -2,7 +2,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import {MaterialAppModule} from './material/material-app.module';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {AppUiModule} from './app-ui/app-ui.module';
@@ -20,7 +19,6 @@ import {autocompleteReducer} from './app-core/reducers/autocomplete.reducer';
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
-    MaterialAppModule,
     AppUiModule,
     StoreModule.forRoot({autocompleteReducer}),
   ],

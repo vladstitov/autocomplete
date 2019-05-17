@@ -9,13 +9,15 @@ export interface ApplicationState {
 
 export const INITIAL_APPLICATION_STATE: ApplicationState = {
   uiState: {
-    cursorPosition: 0,
-    pattern: null
+    textArea: {
+      input: '',
+      position: -1,
+      text: ''
+    }
   },
   storeData: {
     people: null,
-    namesInserted: [],
-    textValue: ''
+    namesInserted: []
   }
 };
 
